@@ -27,17 +27,18 @@
 parser grammar Common;
 
 @header{
-	import com.peoplemerge.ngds.Program;
-	import com.peoplemerge.ngds.Command;
-	import com.peoplemerge.ngds.Node;
-	import com.peoplemerge.ngds.ScriptedCommand;
+package com.peoplemerge.ngds;
+import com.peoplemerge.ngds.Program;
+import com.peoplemerge.ngds.Command;
+import com.peoplemerge.ngds.Node;
+import com.peoplemerge.ngds.ScriptedCommand;
 }
 
 /*
 On host localhost run: <<__EOF__
 ls
 __EOF__
-*/
+
 
 here_doc_statement returns [Command command, Node node] : ON + 
 	HOST ID {}
@@ -56,3 +57,6 @@ node_param : NODE_PARAM ;
 
 letter : LETTER ;
 spaces : WS+ ;
+*/
+
+letter : LETTER ;

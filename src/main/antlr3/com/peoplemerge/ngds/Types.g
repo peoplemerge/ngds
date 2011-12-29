@@ -26,7 +26,7 @@
 
 lexer grammar Types;
 
-@header{
+@lexer::header{
 	package com.peoplemerge.ngds;
 }
 

@@ -24,15 +24,19 @@
 ** copyright owner.
 ************************************************************************/
 
-grammar User;
+parser grammar User;
 
-import Types, Common;
+import Common;//, Types;
+
+@header{
+   package com.peoplemerge.ngds;
+}
 
 
-letters : letter+ ;
-
+letters : LETTER+ ;
+/*
 stuff : ( letters spaces )+ ;
-
+*/
 /*
 create_statement returns [Command command, Node node]: 
 	'Create a new environment called' ID 
