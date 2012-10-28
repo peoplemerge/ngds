@@ -22,37 +22,41 @@ public class ConcurrentSteps extends Executable {
 	public ConcurrentSteps(EventPublisher publisher) {
 		this.publisher = publisher;
 	}
-	
-	public boolean equals(Object o){
-		if (o instanceof ConcurrentSteps){
+
+	public boolean equals(Object o) {
+		if (o instanceof ConcurrentSteps) {
 			ConcurrentSteps other = (ConcurrentSteps) o;
 			return other.steps.equals(steps);
 		}
 		return false;
 	}
-	
-	public static class ConcurrentExecutableRequestedEvent extends DomainEvent{
+
+	public static class ConcurrentExecutableRequestedEvent extends
+			DomainEvent<ConcurrentExecutableRequestedEvent> {
 		public final Executable step;
-		public ConcurrentExecutableRequestedEvent(Executable step){
+
+		public ConcurrentExecutableRequestedEvent(Executable step) {
 			this.step = step;
 		}
 
-		public boolean sameEventAs(DomainEvent event) {
-			return (event instanceof ConcurrentExecutableRequestedEvent && ((ConcurrentExecutableRequestedEvent) event).step
-					.equals(step)) ? true : false;
-		}
-	}
-	public static class ConcurrentExecutableCompletedEvent extends DomainEvent{
-		public final Executable step;
-		public ConcurrentExecutableCompletedEvent(Executable step){
-			this.step = step;
-		}
-		public boolean sameEventAs(DomainEvent event) {
-			return (event instanceof ConcurrentExecutableCompletedEvent && ((ConcurrentExecutableCompletedEvent) event).step
-					.equals(step)) ? true : false;
+		public boolean sameEventAs(ConcurrentExecutableRequestedEvent event) {
+			return (event.step.equals(step)) ? true : false;
 		}
 	}
 
+	public static class ConcurrentExecutableCompletedEvent extends
+			DomainEvent<ConcurrentExecutableCompletedEvent> {
+		public final Executable step;
+
+		public ConcurrentExecutableCompletedEvent(Executable step) {
+			this.step = step;
+		}
+
+		public boolean sameEventAs(ConcurrentExecutableCompletedEvent event) {
+			return  event.step
+					.equals(step) ? true : false;
+		}
+	}
 
 	public void add(Executable runnable) {
 		steps.add(runnable);
@@ -60,13 +64,13 @@ public class ConcurrentSteps extends Executable {
 
 	public ExitCode execute() {
 		ExecutorService executor = Executors.newCachedThreadPool();
-		final Map<Executable,ExitCode> completionCodes = new TreeMap<Executable,ExitCode>();
+		final Map<Executable, ExitCode> completionCodes = new TreeMap<Executable, ExitCode>();
 		for (final Executable step : steps) {
 			publisher.publish(new StepExecutionRequestedEvent(step));
-			Runnable toRun = new Runnable(){
+			Runnable toRun = new Runnable() {
 				public void run() {
 					ExitCode code = step.execute();
-					completionCodes.put(step,code);
+					completionCodes.put(step, code);
 				}
 			};
 			executor.execute(toRun);
@@ -85,7 +89,7 @@ public class ConcurrentSteps extends Executable {
 		ExitCode retval = ExitCode.SUCCESS;
 		for (Executable step : completionCodes.keySet()) {
 			ExitCode code = completionCodes.get(step);
-			if(code == ExitCode.SUCCESS){
+			if (code == ExitCode.SUCCESS) {
 				publisher.publish(new StepExecutedEvent(step));
 			} else {
 				publisher.publish(new StepExecutionFailedEvent(step));
@@ -106,9 +110,10 @@ public class ConcurrentSteps extends Executable {
 		// TODO Auto-generated method stub
 
 	}
-	public String toString(){
-		String retval = super.toString() + ": \n{\n" ;
-		for(Executable step : steps){
+
+	public String toString() {
+		String retval = super.toString() + ": \n{\n";
+		for (Executable step : steps) {
 			retval += "+ " + step.toString() + "\n";
 		}
 		retval += "}";

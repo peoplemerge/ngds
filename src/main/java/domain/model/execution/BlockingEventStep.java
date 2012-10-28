@@ -3,23 +3,24 @@ package domain.model.execution;
 import java.util.concurrent.CountDownLatch;
 
 import domain.shared.DomainEvent;
+import domain.shared.DomainSubscriber;
 import domain.shared.EventHistory;
 import domain.shared.EventPublisher;
 
-public class BlockingEventStep extends Executable implements EventPublisher.Subscriber, Comparable<BlockingEventStep>{
+public class BlockingEventStep extends Executable implements DomainSubscriber<DomainEvent<?>>, Comparable<BlockingEventStep>{
 
-	public static BlockingEventStep factory(EventPublisher publisher, DomainEvent toSend, DomainEvent waitingFor){
+	public static BlockingEventStep factory(EventPublisher publisher, DomainEvent<?> toSend, DomainEvent<?> waitingFor){
 		BlockingEventStep retval = new BlockingEventStep(publisher, toSend, waitingFor);
-		publisher.addSubscriber(retval);
+		publisher.addSubscriber(retval, waitingFor);
 		return retval;
 	}
-	private BlockingEventStep(EventPublisher publisher, DomainEvent toSend, DomainEvent waitingFor){
+	private BlockingEventStep(EventPublisher publisher, DomainEvent<?> toSend, DomainEvent<?> waitingFor){
 		this.publisher = publisher;
 		this.toSend = toSend;
 		this.waitingFor = waitingFor;
 	}
 	private EventPublisher publisher;
-	private DomainEvent toSend, waitingFor;
+	private DomainEvent<?> toSend, waitingFor;
 	private CountDownLatch latch = new CountDownLatch(1);
 	
 	@Override

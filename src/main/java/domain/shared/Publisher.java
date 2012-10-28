@@ -1,4 +1,4 @@
-package domain.shared.publisher;
+package domain.shared;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,7 +30,15 @@ class Publisher<S, O extends Subscriber<S, O, A>, A extends Event<S, O, A>> {
 			if (event.getClass() == type) {
 				List<O> subscribersForClass = subscribers.get(type);
 				for (O subscriber : subscribersForClass) {
-					subscriber.handle(event);
+					
+					// TODO clean up generics so this isnt a problem.
+					// @see DomainPublisherTest
+					try{
+						DomainSubscriber domainSubscriber = (DomainSubscriber) subscriber;
+						domainSubscriber.handle((DomainEvent)event);
+					} catch(ClassCastException e){
+						throw new RuntimeException("your event " +event.getClass().getName()+" cannot be handled by " + subscriber.getClass().getName() ,e );
+					}
 				}
 			}
 		}

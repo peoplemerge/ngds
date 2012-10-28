@@ -5,7 +5,8 @@ import domain.shared.EventHistory;
 
 public abstract class Executable {
 
-	public static class StepExecutionRequestedEvent extends DomainEvent<StepExecutionRequestedEvent> {
+	public static class StepExecutionRequestedEvent extends
+			DomainEvent<StepExecutionRequestedEvent> {
 		public final Executable step;
 
 		public StepExecutionRequestedEvent(Executable step) {
@@ -13,34 +14,34 @@ public abstract class Executable {
 		}
 
 		public boolean sameEventAs(StepExecutionRequestedEvent event) {
-			return (((StepExecutionRequestedEvent) event).step
-					.equals(step)) ? true : false;
+			return (((StepExecutionRequestedEvent) event).step.equals(step)) ? true
+					: false;
 		}
 	}
 
-	public static class StepExecutedEvent extends DomainEvent {
+	public static class StepExecutedEvent extends
+			DomainEvent<StepExecutedEvent> {
 		public final Executable step;
 
 		public StepExecutedEvent(Executable step) {
 			this.step = step;
 		}
 
-		public boolean sameEventAs(DomainEvent event) {
-			return (event instanceof StepExecutedEvent && ((StepExecutedEvent) event).step
-					.equals(step)) ? true : false;
+		public boolean sameEventAs(StepExecutedEvent event) {
+			return (event.step.equals(step)) ? true : false;
 		}
 	}
 
-	public static class StepExecutionFailedEvent extends DomainEvent {
+	public static class StepExecutionFailedEvent extends
+			DomainEvent<StepExecutionFailedEvent> {
 		public final Executable step;
 
 		public StepExecutionFailedEvent(Executable step) {
 			this.step = step;
 		}
 
-		public boolean sameEventAs(DomainEvent event) {
-			return (event instanceof StepExecutionFailedEvent && ((StepExecutionFailedEvent) event).step
-					.equals(step)) ? true : false;
+		public boolean sameEventAs(StepExecutionFailedEvent event) {
+			return (event.step.equals(step)) ? true : false;
 		}
 	}
 
@@ -49,8 +50,8 @@ public abstract class Executable {
 	public abstract void rollback();
 
 	public abstract void resume(EventHistory history);
-	
-	public String toString(){
+
+	public String toString() {
 		return this.getClass().getSimpleName();
 	}
 

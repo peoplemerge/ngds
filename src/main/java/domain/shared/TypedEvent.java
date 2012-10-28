@@ -1,8 +1,8 @@
-package domain.shared.publisher;
+package domain.shared;
 
 import java.util.Date;
 
-public abstract class TypedEvent extends Event<DomainEventPublisher, DomainSubscriber, TypedEvent> {
+abstract class TypedEvent extends Event<EventPublisher, TypedSubscriber, TypedEvent> {
 
 	public TypedEvent() {
 		this.occurred = new Date();

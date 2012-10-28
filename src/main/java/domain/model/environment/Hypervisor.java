@@ -2,13 +2,14 @@ package domain.model.environment;
 
 import domain.model.execution.BlockingEventStep;
 import domain.shared.DomainEvent;
+import domain.shared.DomainSubscriber;
 import domain.shared.EventPublisher;
 
-public class Hypervisor implements EventPublisher.Subscriber {
+public class Hypervisor implements DomainSubscriber<Hypervisor.HostsRequested> {
 
 	public static Hypervisor factory(EventPublisher publisher) {
 		Hypervisor hypervisor = new Hypervisor(publisher);
-		publisher.addSubscriber(hypervisor);
+		publisher.addSubscriber(hypervisor, new HostsRequested(null));
 		return hypervisor;
 	}
 
@@ -65,19 +66,7 @@ public class Hypervisor implements EventPublisher.Subscriber {
 		}
 	}
 
-	public void handle(DomainEvent recieved) {
-		if (recieved instanceof HostsRequested) {
-			// don't really care about other types of events.
-			HostsRequested event = (HostsRequested) recieved;
-			for (Host host : event.environment.hosts) {
-				provisionHost(host);
-				HostBuilt hostEvent = new HostBuilt(host);
-				publisher.publish(hostEvent);
-			}
-			AllHostsBuilt hostsBuiltEvent = new AllHostsBuilt(event);
-			publisher.publish(hostsBuiltEvent);
-		}
-	}
+
 
 	public BlockingEventStep buildStepFor(Environment environment) {
 
@@ -88,6 +77,16 @@ public class Hypervisor implements EventPublisher.Subscriber {
 				eventToSend, waitingFor);
 		return step;
 
+	}
+
+	public void handle(HostsRequested event) {
+		for (Host host : event.environment.hosts) {
+			provisionHost(host);
+			HostBuilt hostEvent = new HostBuilt(host);
+			publisher.publish(hostEvent);
+		}
+		AllHostsBuilt hostsBuiltEvent = new AllHostsBuilt(event);
+		publisher.publish(hostsBuiltEvent);		
 	}
 
 }

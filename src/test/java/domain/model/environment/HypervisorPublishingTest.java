@@ -1,4 +1,4 @@
-package domain.shared;
+package domain.model.environment;
 
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.mock;
@@ -12,39 +12,16 @@ import domain.model.environment.EventStore;
 import domain.model.environment.Host;
 import domain.model.environment.Hypervisor;
 import domain.model.environment.Hypervisor.HostsRequested;
+import domain.shared.EventPublisher;
 
 
-public class EventPublisherTest {
+public class HypervisorPublishingTest {
 
 	
 	private EventStore store = mock(EventStore.class);
 		
-	private class TestEvent extends DomainEvent<TestEvent>{
-		public boolean sameEventAs(TestEvent event) {return false;}
-	} 
-	
-	private class TestSubscriber implements EventPublisher.Subscriber<DomainEvent>{
-		
-		public boolean handled = false;
-		
-		public void handle(DomainEvent event) {
-			handled = true;			
-			
-		}
-	}
-	
 	@Test
-	public void addSubscriber(){
-		EventPublisher publisher = new EventPublisher(store);
-		TestSubscriber subscriber = new TestSubscriber();
-		
-		publisher.addSubscriber(subscriber);
-		TestEvent testEvent = new TestEvent();
-		publisher.publish(testEvent);
-	}
-	
-	@Test
-	public void subscribesHypervisor(){
+	public void hypervisorStores(){
 		EventPublisher publisher = new EventPublisher(store);
 		Hypervisor.factory(publisher);
 		

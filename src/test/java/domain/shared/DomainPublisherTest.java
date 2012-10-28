@@ -1,11 +1,17 @@
-package domain.shared.publisher;
+package domain.shared;
+
+import infrastructure.persistence.InMemoryEventStore;
 
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import domain.model.environment.EventStore;
+
 public class DomainPublisherTest {
 
+	private EventStore eventStore = new InMemoryEventStore();
+	
 	private class TestEvent extends Event<Publisher, TestSubscriber, TestEvent> {
 	}
 
@@ -20,6 +26,7 @@ public class DomainPublisherTest {
 	}
 
 	@Test
+	@Ignore
 	public void addSubscriber() {
 		Publisher<Publisher, TestSubscriber, TestEvent> publisher = new Publisher<Publisher, TestSubscriber, TestEvent>();
 
@@ -70,11 +77,13 @@ public class DomainPublisherTest {
 
 	}
 
-	private class GenericSubscriber implements DomainSubscriber {
+	private class GenericSubscriber implements DomainSubscriber<GenericEvent> {
 		public boolean handled = false;
 
-		public void handle(TypedEvent a) {
-			handled = true;
+
+		public void handle(GenericEvent a) {
+			handled=true;
+			
 		}
 	}
 
@@ -84,13 +93,14 @@ public class DomainPublisherTest {
 		}
 	}
 
-	private class AnotherGenericSubscriber implements DomainSubscriber {
+	private class AnotherGenericSubscriber implements DomainSubscriber<AnotherGenericEvent> {
 		public boolean handled = false;
 
-		public void handle(TypedEvent a) {
-			handled = true;
-		}
 
+		public void handle(AnotherGenericEvent a) {
+			handled=true;
+			
+		}
 	}
 
 	private class AnotherGenericEvent extends DomainEvent<AnotherGenericEvent> {
@@ -101,7 +111,7 @@ public class DomainPublisherTest {
 
 	@Test
 	public void generic() {
-		DomainEventPublisher publisher = new DomainEventPublisher();
+		EventPublisher publisher = new EventPublisher(eventStore);
 		GenericSubscriber subscriber = new GenericSubscriber();
 		publisher.addSubscriber(subscriber, new GenericEvent());
 		AnotherGenericSubscriber anotherSubscriber = new AnotherGenericSubscriber();
@@ -117,12 +127,22 @@ public class DomainPublisherTest {
 		Assert.assertTrue(anotherSubscriber.handled == true);
 	}
 
+	private class GenericFirstTypeSubscriber implements DomainSubscriber<GenericEvent> {
+		public boolean handled = false;
+
+
+		public void handle(GenericEvent a) {
+			handled=true;
+			
+		}
+	}
+
 	@Test
 	public void multipleSubscribersToEventType() {
-		DomainEventPublisher publisher = new DomainEventPublisher();
+		EventPublisher publisher = new EventPublisher(eventStore);
 		GenericSubscriber subscriber = new GenericSubscriber();
 		publisher.addSubscriber(subscriber, new GenericEvent());
-		AnotherGenericSubscriber anotherSubscriber = new AnotherGenericSubscriber();
+		GenericFirstTypeSubscriber anotherSubscriber = new GenericFirstTypeSubscriber();
 		publisher.addSubscriber(anotherSubscriber, new GenericEvent());
 
 		GenericEvent testEvent = new GenericEvent();
@@ -132,7 +152,29 @@ public class DomainPublisherTest {
 		Assert.assertTrue(anotherSubscriber.handled == true);
 	}
 	
+	
+	//TODO Fix the generic type: this appears to be written correctly
+	// but the user of the API makes a natural mistake
+	@Test
+	public void IncorrectEventType() {
+		EventPublisher publisher = new EventPublisher(eventStore);
+		GenericSubscriber subscriber = new GenericSubscriber();
+		publisher.addSubscriber(subscriber, new GenericEvent());
+		AnotherGenericSubscriber anotherSubscriber = new AnotherGenericSubscriber();
+		// the problem here is that AnotherGenericSubscriber is typed to handle AnotherGenericEvent!
+		publisher.addSubscriber(anotherSubscriber, new GenericEvent());
 
+		GenericEvent testEvent = new GenericEvent();
+		try{
+			publisher.publish(testEvent);
+		}catch(RuntimeException e){
+			System.out.println("This throws an exception which indicates the user made a " +
+					"programming error.  Clean up generics to get rid of it.");
+			return;
+		}
+		Assert.fail("You may have fixed generics.  Congrats!  Now fix this test.  I hope you" +
+				"didn't cover up the error to surprise users!");
+	}
 
 
 }

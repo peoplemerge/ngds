@@ -1,6 +1,6 @@
-package domain.shared.publisher;
+package domain.shared;
 
 
  interface Subscriber<S, O extends Subscriber<S, O, A>, A extends Event<S, O, A>> {
-	public void handle(A a);
+	//public  <K extends A>void handle(K a);
 }
