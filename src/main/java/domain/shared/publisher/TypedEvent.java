@@ -1,10 +1,10 @@
-package domain.shared;
+package domain.shared.publisher;
 
 import java.util.Date;
 
-public abstract class DomainEvent<T> {
+public abstract class TypedEvent extends Event<DomainEventPublisher, DomainSubscriber, TypedEvent> {
 
-	public DomainEvent() {
+	public TypedEvent() {
 		this.occurred = new Date();
 	}
 
@@ -13,7 +13,4 @@ public abstract class DomainEvent<T> {
 	public String toString(){
 		return super.toString() + " " + occurred ;
 	}
-	
-	public abstract boolean sameEventAs(T event);
-	
 }

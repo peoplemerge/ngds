@@ -5,15 +5,15 @@ import domain.shared.EventHistory;
 
 public abstract class Executable {
 
-	public static class StepExecutionRequestedEvent extends DomainEvent {
+	public static class StepExecutionRequestedEvent extends DomainEvent<StepExecutionRequestedEvent> {
 		public final Executable step;
 
 		public StepExecutionRequestedEvent(Executable step) {
 			this.step = step;
 		}
 
-		public boolean sameEventAs(DomainEvent event) {
-			return (event instanceof StepExecutionRequestedEvent && ((StepExecutionRequestedEvent) event).step
+		public boolean sameEventAs(StepExecutionRequestedEvent event) {
+			return (((StepExecutionRequestedEvent) event).step
 					.equals(step)) ? true : false;
 		}
 	}

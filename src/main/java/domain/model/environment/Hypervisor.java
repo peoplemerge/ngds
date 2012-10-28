@@ -1,6 +1,5 @@
 package domain.model.environment;
 
-import domain.model.environment.Ssh.DispatchRequested;
 import domain.model.execution.BlockingEventStep;
 import domain.shared.DomainEvent;
 import domain.shared.EventPublisher;
@@ -19,56 +18,40 @@ public class Hypervisor implements EventPublisher.Subscriber {
 		this.publisher = publisher;
 	}
 
-	public static class HostsRequested extends DomainEvent {
+	public static class HostsRequested extends DomainEvent<HostsRequested> {
 		public final Environment environment;
 
 		public HostsRequested(Environment environment) {
 			this.environment = environment;
 		}
-		
-		public boolean sameEventAs(DomainEvent event) {
-			if (event instanceof HostsRequested) {
-				HostsRequested requested = (HostsRequested) event;
-				if(requested.environment.equals(environment)){
-					return true;
-				}			
-			}
-			return false;
+
+		public boolean sameEventAs(HostsRequested event) {
+			return event.environment.equals(environment);
 		}
 	}
 
-	public static class HostBuilt extends DomainEvent {
+	public static class HostBuilt extends DomainEvent<HostBuilt> {
 		public final Host host;
 
 		public HostBuilt(Host host) {
 			this.host = host;
 		}
-		public boolean sameEventAs(DomainEvent event) {
-			if (event instanceof HostBuilt) {
-				HostBuilt requested = (HostBuilt) event;
-				if(requested.host.equals(host)){
-					return true;
-				}			
-			}
-			return false;
+
+		public boolean sameEventAs(HostBuilt event) {
+			return event.host.equals(host);
+			
 		}
 	}
 
-	public static class AllHostsBuilt extends DomainEvent {
+	public static class AllHostsBuilt extends DomainEvent<AllHostsBuilt> {
 		public final Environment environment;
 
 		public AllHostsBuilt(HostsRequested source) {
 			environment = source.environment;
 		}
 
-		public boolean sameEventAs(DomainEvent event) {
-			if (event instanceof AllHostsBuilt) {
-				AllHostsBuilt requested = (AllHostsBuilt) event;
-				if(requested.environment.equals(environment)){
-					return true;
-				}			
-			}
-			return false;
+		public boolean sameEventAs(AllHostsBuilt event) {
+			return event.environment.equals(environment);
 		}
 	}
 
@@ -101,8 +84,8 @@ public class Hypervisor implements EventPublisher.Subscriber {
 		HostsRequested eventToSend = new HostsRequested(environment);
 		AllHostsBuilt waitingFor = new AllHostsBuilt(eventToSend);
 
-		BlockingEventStep step = BlockingEventStep.factory(publisher, eventToSend,
-				waitingFor);
+		BlockingEventStep step = BlockingEventStep.factory(publisher,
+				eventToSend, waitingFor);
 		return step;
 
 	}
