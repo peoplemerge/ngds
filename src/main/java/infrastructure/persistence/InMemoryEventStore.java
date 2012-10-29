@@ -13,7 +13,7 @@ public class InMemoryEventStore implements EventStore {
 	}
 
 	
-	public void store(DomainEvent event) {
+	public void store(DomainEvent<?> event) {
 		history.events.add(event);
 	}
 

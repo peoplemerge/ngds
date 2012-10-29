@@ -11,7 +11,7 @@ import domain.model.environment.EventStore;
 public class DomainPublisherTest {
 
 	private EventStore eventStore = new InMemoryEventStore();
-	
+
 	private class TestEvent extends Event<Publisher, TestSubscriber, TestEvent> {
 	}
 
@@ -80,10 +80,9 @@ public class DomainPublisherTest {
 	private class GenericSubscriber implements DomainSubscriber<GenericEvent> {
 		public boolean handled = false;
 
-
 		public void handle(GenericEvent a) {
-			handled=true;
-			
+			handled = true;
+
 		}
 	}
 
@@ -93,13 +92,13 @@ public class DomainPublisherTest {
 		}
 	}
 
-	private class AnotherGenericSubscriber implements DomainSubscriber<AnotherGenericEvent> {
+	private class AnotherGenericSubscriber implements
+			DomainSubscriber<AnotherGenericEvent> {
 		public boolean handled = false;
 
-
 		public void handle(AnotherGenericEvent a) {
-			handled=true;
-			
+			handled = true;
+
 		}
 	}
 
@@ -127,13 +126,13 @@ public class DomainPublisherTest {
 		Assert.assertTrue(anotherSubscriber.handled == true);
 	}
 
-	private class GenericFirstTypeSubscriber implements DomainSubscriber<GenericEvent> {
+	private class GenericFirstTypeSubscriber implements
+			DomainSubscriber<GenericEvent> {
 		public boolean handled = false;
 
-
 		public void handle(GenericEvent a) {
-			handled=true;
-			
+			handled = true;
+
 		}
 	}
 
@@ -151,9 +150,8 @@ public class DomainPublisherTest {
 		Assert.assertTrue(subscriber.handled == true);
 		Assert.assertTrue(anotherSubscriber.handled == true);
 	}
-	
-	
-	//TODO Fix the generic type: this appears to be written correctly
+
+	// TODO Fix the generic type: this appears to be written correctly
 	// but the user of the API makes a natural mistake
 	@Test
 	public void IncorrectEventType() {
@@ -161,20 +159,22 @@ public class DomainPublisherTest {
 		GenericSubscriber subscriber = new GenericSubscriber();
 		publisher.addSubscriber(subscriber, new GenericEvent());
 		AnotherGenericSubscriber anotherSubscriber = new AnotherGenericSubscriber();
-		// the problem here is that AnotherGenericSubscriber is typed to handle AnotherGenericEvent!
+		// the problem here is that AnotherGenericSubscriber is typed to handle
+		// AnotherGenericEvent!
 		publisher.addSubscriber(anotherSubscriber, new GenericEvent());
 
 		GenericEvent testEvent = new GenericEvent();
-		try{
+		try {
 			publisher.publish(testEvent);
-		}catch(RuntimeException e){
-			System.out.println("This throws an exception which indicates the user made a " +
-					"programming error.  Clean up generics to get rid of it.");
+		} catch (RuntimeException e) {
+			System.out
+					.println("This path throws an exception which is possible if the user made a "
+							+ "programming error. \n Clean up generics implementation to get rid of the possibility.");
 			return;
 		}
-		Assert.fail("You may have fixed generics.  Congrats!  Now fix this test.  I hope you" +
-				"didn't cover up the error to surprise users!");
+		Assert
+				.fail("You may have fixed generics.  Congrats!  Now fix this test.  I hope you"
+						+ "didn't cover up the error to surprise users!");
 	}
-
 
 }

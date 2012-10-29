@@ -2,8 +2,8 @@ package domain.model.execution;
 
 import java.util.LinkedList;
 
-import domain.shared.EventHistory;
 import domain.shared.EventPublisher;
+import domain.shared.DomainEvent.Type;
 
 public class SequentialSteps extends Executable {
 	
@@ -19,34 +19,26 @@ public class SequentialSteps extends Executable {
 		steps.add(step);
 	}
 	
+	public enum StepType implements Type{
+		SEQUENCE_REQUESTED, SEQUENCE_STEP_REQUESTED, SEQUENCE_STEP_EXECUTED, SEQUENCE_EXECUTED, SEQUENTIAL_FAILED;
+	}
 	
 	@Override
 	public ExitCode execute() {
-		publisher.publish(new StepExecutionRequestedEvent(this));
+		publisher.publish(new StepExecutionEvent(StepType.SEQUENCE_REQUESTED,this));
 		for(Executable step : steps){
-			publisher.publish(new StepExecutionRequestedEvent(step));
+			publisher.publish(new StepExecutionEvent(StepType.SEQUENCE_STEP_REQUESTED,step));
 			ExitCode exitcode = step.execute();
 			if(exitcode != ExitCode.SUCCESS){
-				publisher.publish(new StepExecutionFailedEvent(step));
+				publisher.publish(new StepExecutionEvent(StepType.SEQUENTIAL_FAILED,step));
 				return exitcode;
 			}
-			publisher.publish(new StepExecutedEvent(step));
+			publisher.publish(new StepExecutionEvent(StepType.SEQUENCE_STEP_EXECUTED,step));
 		}
-		publisher.publish(new StepExecutedEvent(this));
+		publisher.publish(new StepExecutionEvent(StepType.SEQUENCE_EXECUTED,this));
 		return ExitCode.SUCCESS;
 	}
 
-	@Override
-	public void resume(EventHistory history) {
-		// TODO Auto-generated method stub
-	}
-
-	@Override
-	public void rollback() {
-		// TODO Auto-generated method stub
-		// should rollback starting with that last executed step
-	}
-	
 	public String toString(){
 		String retval = super.toString() + ": \n[\n" ;
 		for(Executable step : steps){

@@ -8,11 +8,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import domain.model.execution.Executable.StepExecutedEvent;
-import domain.model.execution.Executable.StepExecutionRequestedEvent;
-import domain.shared.DomainEvent;
-import domain.shared.EventHistory;
 import domain.shared.EventPublisher;
+import domain.shared.DomainEvent.Type;
 
 public class ConcurrentSteps extends Executable {
 
@@ -31,42 +28,20 @@ public class ConcurrentSteps extends Executable {
 		return false;
 	}
 
-	public static class ConcurrentExecutableRequestedEvent extends
-			DomainEvent<ConcurrentExecutableRequestedEvent> {
-		public final Executable step;
-
-		public ConcurrentExecutableRequestedEvent(Executable step) {
-			this.step = step;
-		}
-
-		public boolean sameEventAs(ConcurrentExecutableRequestedEvent event) {
-			return (event.step.equals(step)) ? true : false;
-		}
-	}
-
-	public static class ConcurrentExecutableCompletedEvent extends
-			DomainEvent<ConcurrentExecutableCompletedEvent> {
-		public final Executable step;
-
-		public ConcurrentExecutableCompletedEvent(Executable step) {
-			this.step = step;
-		}
-
-		public boolean sameEventAs(ConcurrentExecutableCompletedEvent event) {
-			return  event.step
-					.equals(step) ? true : false;
-		}
-	}
-
 	public void add(Executable runnable) {
 		steps.add(runnable);
 	}
+
+	public enum ConcurrentEvent implements Type {
+		CONCURRENT_STEPS_REQUESTED, CONCURRENT_STEPS_EXECUTED, CONCURRENT_STEPS_FAILED
+	}
+
 
 	public ExitCode execute() {
 		ExecutorService executor = Executors.newCachedThreadPool();
 		final Map<Executable, ExitCode> completionCodes = new TreeMap<Executable, ExitCode>();
 		for (final Executable step : steps) {
-			publisher.publish(new StepExecutionRequestedEvent(step));
+			publisher.publish(new StepExecutionEvent(ConcurrentEvent.CONCURRENT_STEPS_REQUESTED, step));
 			Runnable toRun = new Runnable() {
 				public void run() {
 					ExitCode code = step.execute();
@@ -90,25 +65,13 @@ public class ConcurrentSteps extends Executable {
 		for (Executable step : completionCodes.keySet()) {
 			ExitCode code = completionCodes.get(step);
 			if (code == ExitCode.SUCCESS) {
-				publisher.publish(new StepExecutedEvent(step));
+				publisher.publish(new StepExecutionEvent(ConcurrentEvent.CONCURRENT_STEPS_EXECUTED,step));
 			} else {
-				publisher.publish(new StepExecutionFailedEvent(step));
+				publisher.publish(new StepExecutionEvent(ConcurrentEvent.CONCURRENT_STEPS_FAILED,step));
 				retval = code;
 			}
 		}
 		return retval;
-	}
-
-	@Override
-	public void resume(EventHistory history) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void rollback() {
-		// TODO Auto-generated method stub
-
 	}
 
 	public String toString() {

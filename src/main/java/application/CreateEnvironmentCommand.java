@@ -62,7 +62,7 @@ public class CreateEnvironmentCommand implements CreatesSaga {
 
 		ConcurrentSteps concurrent = new ConcurrentSteps(publisher);
 		for(Host host : environment.hosts){
-			BlockingEventStep sshToVms = ssh.buildStepFor(host, "echo hello world");
+			BlockingEventStep sshToVms = ssh.buildStepFor(environment, host, "echo hello world");
 			concurrent.add(sshToVms);
 		}
 		sequence.add(concurrent);

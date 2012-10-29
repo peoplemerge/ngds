@@ -1,15 +1,16 @@
 package domain.model.environment;
 
 import domain.model.execution.BlockingEventStep;
-import domain.shared.DomainEvent;
 import domain.shared.DomainSubscriber;
 import domain.shared.EventPublisher;
+import domain.shared.DomainEvent.Type;
 
-public class Hypervisor implements DomainSubscriber<Hypervisor.HostsRequested> {
+public class Hypervisor implements DomainSubscriber<EnvironmentEvent> {
 
 	public static Hypervisor factory(EventPublisher publisher) {
 		Hypervisor hypervisor = new Hypervisor(publisher);
-		publisher.addSubscriber(hypervisor, new HostsRequested(null));
+		publisher.addSubscriber(hypervisor, new EnvironmentEvent.Builder(
+				HypervisorType.REQUESTED, null).build());
 		return hypervisor;
 	}
 
@@ -19,42 +20,10 @@ public class Hypervisor implements DomainSubscriber<Hypervisor.HostsRequested> {
 		this.publisher = publisher;
 	}
 
-	public static class HostsRequested extends DomainEvent<HostsRequested> {
-		public final Environment environment;
-
-		public HostsRequested(Environment environment) {
-			this.environment = environment;
-		}
-
-		public boolean sameEventAs(HostsRequested event) {
-			return event.environment.equals(environment);
-		}
+	public enum HypervisorType implements Type {
+		REQUESTED, HOST_BUILT, ALL_HOSTS_BUILT
 	}
 
-	public static class HostBuilt extends DomainEvent<HostBuilt> {
-		public final Host host;
-
-		public HostBuilt(Host host) {
-			this.host = host;
-		}
-
-		public boolean sameEventAs(HostBuilt event) {
-			return event.host.equals(host);
-			
-		}
-	}
-
-	public static class AllHostsBuilt extends DomainEvent<AllHostsBuilt> {
-		public final Environment environment;
-
-		public AllHostsBuilt(HostsRequested source) {
-			environment = source.environment;
-		}
-
-		public boolean sameEventAs(AllHostsBuilt event) {
-			return event.environment.equals(environment);
-		}
-	}
 
 	public void provisionHost(Host host) {
 		// Actually go to VMWare, EC2, etc.
@@ -66,12 +35,11 @@ public class Hypervisor implements DomainSubscriber<Hypervisor.HostsRequested> {
 		}
 	}
 
-
-
 	public BlockingEventStep buildStepFor(Environment environment) {
-
-		HostsRequested eventToSend = new HostsRequested(environment);
-		AllHostsBuilt waitingFor = new AllHostsBuilt(eventToSend);
+		EnvironmentEvent eventToSend = new EnvironmentEvent.Builder(
+				HypervisorType.REQUESTED, environment).build();
+		EnvironmentEvent waitingFor = new EnvironmentEvent.Builder(
+				HypervisorType.ALL_HOSTS_BUILT, environment).build();
 
 		BlockingEventStep step = BlockingEventStep.factory(publisher,
 				eventToSend, waitingFor);
@@ -79,14 +47,20 @@ public class Hypervisor implements DomainSubscriber<Hypervisor.HostsRequested> {
 
 	}
 
-	public void handle(HostsRequested event) {
-		for (Host host : event.environment.hosts) {
-			provisionHost(host);
-			HostBuilt hostEvent = new HostBuilt(host);
-			publisher.publish(hostEvent);
+	public void handle(EnvironmentEvent event) {
+		if (event.type == HypervisorType.REQUESTED) {
+			for (Host host : event.environment.hosts) {
+				provisionHost(host);
+				EnvironmentEvent hostEvent = new EnvironmentEvent.Builder(
+						HypervisorType.HOST_BUILT, event.environment).withHost(host).build();
+
+				publisher.publish(hostEvent);
+			}
+			EnvironmentEvent hostsBuiltEvent = new EnvironmentEvent.Builder(
+					HypervisorType.ALL_HOSTS_BUILT, event.environment).build();
+
+			publisher.publish(hostsBuiltEvent);
 		}
-		AllHostsBuilt hostsBuiltEvent = new AllHostsBuilt(event);
-		publisher.publish(hostsBuiltEvent);		
 	}
 
 }

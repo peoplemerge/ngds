@@ -12,8 +12,8 @@ public class EventPublisher extends Publisher<EventPublisher, TypedSubscriber, T
 	}
 
 	public void publish(DomainEvent<?> event) {
-		super.publish(event);
 		store.store(event);
+		super.publish(event);
 	}
 
 }

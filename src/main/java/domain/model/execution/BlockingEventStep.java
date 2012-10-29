@@ -4,7 +4,6 @@ import java.util.concurrent.CountDownLatch;
 
 import domain.shared.DomainEvent;
 import domain.shared.DomainSubscriber;
-import domain.shared.EventHistory;
 import domain.shared.EventPublisher;
 
 public class BlockingEventStep extends Executable implements DomainSubscriber<DomainEvent<?>>, Comparable<BlockingEventStep>{
@@ -35,19 +34,8 @@ public class BlockingEventStep extends Executable implements DomainSubscriber<Do
 		return ExitCode.SUCCESS;
 	}
 
-	@Override
-	public void resume(EventHistory history) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void rollback() {
-		// TODO Auto-generated method stub
-
-	}
-
 	public void handle(DomainEvent event) {
+		
 		if(event.sameEventAs(waitingFor)){
 			latch.countDown();
 		}
