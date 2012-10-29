@@ -4,7 +4,6 @@ import infrastructure.persistence.InMemoryEnvironmentRepository;
 import infrastructure.persistence.InMemoryEventStore;
 import domain.model.environment.Environment;
 import domain.model.environment.EnvironmentRepository;
-import domain.model.environment.EventStore;
 import domain.model.environment.Host;
 import domain.model.environment.Hypervisor;
 import domain.model.environment.Ssh;
@@ -15,6 +14,7 @@ import domain.model.execution.PersistStep;
 import domain.model.execution.Saga;
 import domain.model.execution.SequentialSteps;
 import domain.shared.EventPublisher;
+import domain.shared.EventStore;
 
 public class CreateEnvironmentCommand implements CreatesSaga {
 

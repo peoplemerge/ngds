@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import org.junit.Test;
 
 import domain.shared.EventPublisher;
+import domain.shared.EventStore;
 
 
 public class HypervisorPublishingTest {

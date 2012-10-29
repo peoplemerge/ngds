@@ -1,6 +1,5 @@
 package domain.shared;
 
-import domain.model.environment.EventStore;
 
 
 public class EventPublisher extends Publisher<EventPublisher, TypedSubscriber, TypedEvent>{

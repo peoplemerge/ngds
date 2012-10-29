@@ -1,7 +1,5 @@
-package domain.model.environment;
+package domain.shared;
 
-import domain.shared.DomainEvent;
-import domain.shared.EventHistory;
 
 public interface EventStore {
 	public void store(DomainEvent<?> event);

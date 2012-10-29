@@ -1,8 +1,8 @@
 package infrastructure.persistence;
 
-import domain.model.environment.EventStore;
 import domain.shared.DomainEvent;
 import domain.shared.EventHistory;
+import domain.shared.EventStore;
 
 public class InMemoryEventStore implements EventStore {
 

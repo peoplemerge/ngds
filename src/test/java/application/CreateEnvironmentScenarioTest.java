@@ -7,9 +7,9 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import domain.model.environment.EnvironmentRepository;
-import domain.model.environment.EventStore;
 import domain.model.execution.ExitCode;
 import domain.model.execution.Saga;
+import domain.shared.EventStore;
 
 public class CreateEnvironmentScenarioTest {
 
